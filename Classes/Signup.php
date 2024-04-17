@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 class Signup extends Dbh {
     private $username;
@@ -11,12 +11,12 @@ class Signup extends Dbh {
         $this->email = $email;
     }
 
-    private function insertUser() {
+    private function insertUser($hashed_password) {
         try {
             $query = "INSERT INTO users (username, pwd, email) VALUES (:username, :pwd, :email);";
-            $stmt = $this->connect()->prepare($query);
+            $stmt = parent::connect()->prepare($query);
             $stmt->bindParam(":username", $this->username);
-            $stmt->bindParam(":pwd", $this->pwd);
+            $stmt->bindParam(":pwd", $hashed_password); // Insert hashed password
             $stmt->bindParam(":email", $this->email);
             $stmt->execute();
             return true;
@@ -25,26 +25,28 @@ class Signup extends Dbh {
         }
     }
 
-    private function emptySubmit() {
-        if(isset($this->username) && isset($this->pwd) && isset($this->email)) {
+    private function isEmptySubmit() {
+        if(isset($this->username) || isset($this->pwd) || isset($this->email)){
             return false;
         } else {
             return true;
         }
     }
 
-    public function createUser() {
-        if ($this->emptySubmit()) {
-            header("location: " . $_SERVER['DOCUMENT_ROOT'] . '/index.php');
+    public function signupUser(){
+        //Error
+        if($this->isEmptySubmit()) {
+            header("Location: index.php");
             die();
         }
 
-        if ($this->insertUser()) {
-            header("location: " . $_SERVER['DOCUMENT_ROOT'] . '/success.php');
-            die();
-        } else {
-            die("Failed to create user.");
-        }
+        // No errors, hash the password
+        $options = [
+            'cost' => 12
+        ];
+        $hashed_password = password_hash($this->pwd, PASSWORD_DEFAULT, $options);
+
+        // Insert user into the database
+        $this->insertUser($hashed_password);
     }
 }
-?>

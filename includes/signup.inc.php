@@ -8,12 +8,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     require_once "../classes/Signup.php";
 
     $signup = new Signup($username, $pwd, $email);
-    $signup->createUser();
-
-    // Hash the password
-    $options = [
-        'cost' => 12
-    ];
-    $hashed_password = password_hash($pwd, PASSWORD_DEFAULT, $options);
+    $signup->signupUser();
 }
 
